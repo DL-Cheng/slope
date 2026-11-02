@@ -12,7 +12,7 @@
     demo: false
   };
   // Must stay identical to the thresholds in the firmware
-  const TH = { soilWatch: 70, soilWarn: 85, tiltWatch: 3, tiltWarn: 8, tiltDanger: 15, battLow: 20 };
+  const TH = { soilWatch: 70, soilWarn: 85, tiltWatch: 6, tiltWarn: 12, tiltDanger: 20, battLow: 20 };
   const STALE_MS = 12000;
   const MAX_POINTS = 150;
 
@@ -140,7 +140,7 @@
       const y = padT + ph * i / 4;
       g.beginPath(); g.moveTo(padL, y); g.lineTo(w - padR, y); g.stroke();
       g.textAlign = 'right'; g.fillText(String(100 - i * 25), padL - 5, y + 4);
-      g.textAlign = 'left'; g.fillText(String(20 - i * 5), w - padR + 5, y + 4);
+      g.textAlign = 'left'; g.fillText((30 - i * 7.5).toString(), w - padR + 5, y + 4);
     }
     if (history.length < 2) {
       g.textAlign = 'center'; g.fillText('Collecting data…', w / 2, h / 2);
@@ -157,7 +157,7 @@
       g.stroke();
     };
     line('soil', 100, '#1b8bd0');
-    line('tilt', 20, '#e0701a');
+    line('tilt', 30, '#e0701a');
     g.fillStyle = '#5d7770'; g.textAlign = 'left';
     g.fillText(timeStr(t0).slice(3), padL, h - 3);
     g.textAlign = 'right'; g.fillText(timeStr(t1).slice(3), w - padR, h - 3);
@@ -278,7 +278,7 @@
   /* ---------- demo simulator ---------- */
   const demo = { scn: 'normal', soil: 38, tilt: 0.3, tx: 0.2, ty: -0.1, crack: 0, batt: 87, timer: null, muted: false };
   function demoStep() {
-    const tgt = { normal: [38, 0.3], rain: [92, 0.9], tilt: [78, 11], crack: [88, 17] }[demo.scn];
+    const tgt = { normal: [38, 0.3], rain: [92, 0.9], tilt: [45, 14], crack: [88, 8] }[demo.scn];
     demo.soil += (tgt[0] - demo.soil) * 0.12 + (Math.random() - 0.5) * 0.8;
     demo.tilt += (tgt[1] - demo.tilt) * 0.12 + (Math.random() - 0.5) * 0.08;
     demo.tilt = Math.max(0, demo.tilt);
