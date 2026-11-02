@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Slope Sentinel · IPITEx 2027</title>
+  <meta name="description" content="Slope Sentinel – a solar-powered, plug-in landslide early-warning stake. Exhibited at IPITEx 2027, Bangkok.">
+  <meta name="theme-color" content="#0f7a5c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Slope Sentinel">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-sev="0">
+
+<header class="topbar">
+  <img class="logo" src="icons/icon-192.png" alt="" width="40" height="40">
+  <div class="brand">
+    <h1>Slope Sentinel</h1>
+    <p>Smart Landslide Early-Warning Stake</p>
+  </div>
+  <span class="expo-pill" title="Exhibited at IPITEx 2027, Bangkok">IPITEx 2027</span>
+</header>
+
+<div id="demoBanner" class="demo-banner" hidden>DEMO MODE · simulated data, no device connected</div>
+
+<main>
+  <!-- ================= MONITOR ================= -->
+  <section id="page-monitor" class="page active" aria-label="Monitor">
+
+    <article class="hero" id="hero" aria-live="polite">
+      <div class="hero-top">
+        <span class="conn" id="connChip"><i></i><span id="connText">Connecting…</span></span>
+        <span class="updated" id="updatedText">No data yet</span>
+      </div>
+      <div class="hero-main">
+        <div class="beacon" aria-hidden="true"><span></span><span></span><b></b></div>
+        <div>
+          <div class="hero-level" id="heroLevel">NO DATA</div>
+          <div class="hero-msg" id="heroMsg">Waiting for the stake to report.</div>
+        </div>
+      </div>
+      <ul class="chips" id="trigChips"></ul>
+    </article>
+
+    <div class="grid">
+      <!-- Soil -->
+      <article class="card">
+        <header><span class="ico">💧</span><h2>Soil Moisture</h2></header>
+        <div class="big"><span id="soilVal">--</span><small>%</small></div>
+        <div class="bar" id="soilBar"><div class="fill" id="soilFill"></div>
+          <i class="mark" style="left:70%"></i><i class="mark" style="left:85%"></i></div>
+        <p class="hint">Watch ≥ 70 % · Warning ≥ 85 %</p>
+        <p class="sub" id="soilState">--</p>
+      </article>
+
+      <!-- Tilt -->
+      <article class="card">
+        <header><span class="ico">📐</span><h2>Slope Tilt</h2></header>
+        <div class="big"><span id="tiltVal">--</span><small>°</small></div>
+        <svg class="tiltviz" viewBox="0 0 160 70" role="img" aria-label="Stake tilt visual">
+          <path d="M0 52 L160 40 L160 70 L0 70Z" fill="#cdb48f"/>
+          <path d="M0 52 L160 40" stroke="#5fae6e" stroke-width="4"/>
+          <g id="stakeG" style="transform-origin:80px 46px;transition:transform .6s ease">
+            <rect x="77" y="14" width="6" height="34" rx="2" fill="#6b4a2b"/>
+            <rect x="66" y="4" width="28" height="14" rx="2" fill="#d9a465"/>
+            <path d="M62 6 L80 -4 L98 6Z" fill="#1e3a5f"/>
+          </g>
+        </svg>
+        <p class="hint">Watch ≥ 3° · Warning ≥ 8° · Danger ≥ 15°</p>
+        <p class="sub">X <b id="tiltX">--</b>° · Y <b id="tiltY">--</b>° · <span id="tiltState">--</span></p>
+      </article>
+
+      <!-- Crack -->
+      <article class="card">
+        <header><span class="ico">🪨</span><h2>Crack Pin</h2></header>
+        <div class="crack" id="crackBox">
+          <span class="crack-dot"></span>
+          <div><b id="crackVal">--</b><small id="crackSub">Pin status unknown</small></div>
+        </div>
+        <p class="hint">Pin pulled out = ground has opened</p>
+      </article>
+
+      <!-- Battery -->
+      <article class="card">
+        <header><span class="ico">🔋</span><h2>Battery</h2></header>
+        <div class="big"><span id="battVal">--</span><small>%</small></div>
+        <div class="bar batt" id="battBar"><div class="fill" id="battFill"></div></div>
+        <p class="sub"><span id="battV">--</span> V · Wi-Fi <span id="rssi">--</span> dBm</p>
+      </article>
+    </div>
+
+    <article class="card controls">
+      <header><span class="ico">🎛️</span><h2>Controls</h2></header>
+      <div class="btnrow">
+        <button class="btn" id="btnMute">🔕 Mute buzzer</button>
+        <button class="btn" id="btnReset">♻️ Reset alarm</button>
+        <button class="btn" id="btnZero">🎯 Re-zero tilt</button>
+        <button class="btn warn" id="btnTest">🔔 Test alarm</button>
+      </div>
+      <p class="hint" id="cmdMsg">Commands are sent to the stake over MQTT.</p>
+    </article>
+
+    <article class="card" id="demoCard" hidden>
+      <header><span class="ico">🧪</span><h2>Demo Scenarios</h2></header>
+      <div class="btnrow">
+        <button class="btn" data-scn="normal">Normal</button>
+        <button class="btn" data-scn="rain">Heavy rain</button>
+        <button class="btn" data-scn="tilt">Slope shift</button>
+        <button class="btn warn" data-scn="crack">Crack opens</button>
+      </div>
+    </article>
+
+    <article class="card">
+      <header><span class="ico">📈</span><h2>Live Trend</h2><span class="legend"><i class="l1"></i>Soil %<i class="l2"></i>Tilt °</span></header>
+      <canvas id="chart" height="170"></canvas>
+    </article>
+
+    <article class="card">
+      <header><span class="ico">🗒️</span><h2>Event Log</h2><button class="link" id="btnClearLog">Clear</button></header>
+      <ul class="log" id="logList"><li class="empty">No events yet.</li></ul>
+    </article>
+  </section>
+
+  <!-- ================= ABOUT ================= -->
+  <section id="page-about" class="page" aria-label="About">
+    <article class="card expo">
+      <span class="expo-pill big">IPITEx 2027</span>
+      <h2>Slope Sentinel</h2>
+      <p>A solar-powered, plug-in early-warning stake for roadside and hillside slopes. Entry for the <b>IPITEx 2027</b> invention exhibition, Bangkok, Thailand.</p>
+    </article>
+
+    <article class="card">
+      <h2 class="sec">Why we built it</h2>
+      <p>A slope rarely fails without warning. Before a landslide, the ground, nearby structures and groundwater usually show early signs. Slope Sentinel watches for the three signs that can be measured cheaply and continuously, then alerts people on site and on their phones.</p>
+      <div class="tbl">
+        <div class="tr th"><span>Early warning sign</span><span>Sensor on the stake</span></div>
+        <div class="tr"><span><b>New cracks</b> on the ground or slope surface that keep widening</span><span>Crack-pin switch: pulling the pin shorts the circuit</span></div>
+        <div class="tr"><span><b>Tilting</b> of trees, poles, walls; ground shifting or settling</span><span>L3G4200D 3-axis gyroscope tracks stake tilt</span></div>
+        <div class="tr"><span><b>Unusual seepage</b> or saturated ground</span><span>Soil-moisture probe in the ground</span></div>
+      </div>
+    </article>
+
+    <article class="card">
+      <h2 class="sec">Alert levels</h2>
+      <div class="levels">
+        <div class="lv l0"><b>0 · All clear</b><span>Everything normal. LED off.</span></div>
+        <div class="lv l1"><b>1 · Watch</b><span>Soil ≥ 70 % or tilt ≥ 3°. Red LED blinks slowly.</span></div>
+        <div class="lv l2"><b>2 · Warning</b><span>Soil ≥ 85 % or tilt ≥ 8°, or two signs together. LED blinks fast, buzzer beeps.</span></div>
+        <div class="lv l3"><b>3 · Danger</b><span>Crack pin pulled, tilt ≥ 15°, or signs escalate. LED and buzzer sound continuously.</span></div>
+      </div>
+    </article>
+
+    <article class="card">
+      <h2 class="sec">How it works</h2>
+      <ol class="steps">
+        <li><b>Sense</b> soil moisture, tilt, crack pin and battery level on an ESP32.</li>
+        <li><b>Decide</b> the alert level on the device, so it still warns locally if Wi-Fi is down.</li>
+        <li><b>Alarm</b> on site with a red LED and a buzzer.</li>
+        <li><b>Sync</b> to the cloud over MQTT (EMQX) and notify phones through this Web App.</li>
+      </ol>
+      <p class="hint">Power: rechargeable battery with a solar panel on the hut roof (display model).</p>
+    </article>
+
+    <article class="card">
+      <h2 class="sec">Team</h2>
+      <p>Department of Computer and Communication Engineering,<br>Shu-Te University, Taiwan.</p>
+    </article>
+  </section>
+
+  <!-- ================= SETTINGS ================= -->
+  <section id="page-settings" class="page" aria-label="Settings">
+    <article class="card">
+      <h2 class="sec">Connection</h2>
+      <label class="field">Broker (WebSocket)
+        <input id="setBroker" type="text" inputmode="url" autocomplete="off" spellcheck="false">
+      </label>
+      <label class="field">Topic base
+        <input id="setTopic" type="text" autocomplete="off" spellcheck="false">
+      </label>
+      <div class="btnrow">
+        <button class="btn primary" id="btnSave">Save &amp; reconnect</button>
+        <button class="btn" id="btnDefaults">Restore defaults</button>
+      </div>
+      <p class="hint" id="setMsg">The topic base must match <code>MQTT_BASE</code> in the ESP32 firmware.</p>
+    </article>
+
+    <article class="card">
+      <h2 class="sec">Phone alerts</h2>
+      <div class="switch-row">
+        <span>Notifications<small id="notifState">Off</small></span>
+        <button class="btn" id="btnNotif">Enable</button>
+      </div>
+      <label class="switch-row">
+        <span>Alert sound<small>Plays a tone when the level rises</small></span>
+        <input type="checkbox" id="setSound" class="toggle" checked>
+      </label>
+      <p class="hint">Keep the app open or installed on your home screen. On iPhone, notifications work only after “Add to Home Screen”.</p>
+    </article>
+
+    <article class="card">
+      <h2 class="sec">Demo</h2>
+      <label class="switch-row">
+        <span>Demo mode<small>Simulated data for exhibitions</small></span>
+        <input type="checkbox" id="setDemo" class="toggle">
+      </label>
+    </article>
+
+    <article class="card">
+      <h2 class="sec">App</h2>
+      <p class="sub">Slope Sentinel v1.0 · IPITEx 2027</p>
+    </article>
+  </section>
+</main>
+
+<footer class="expo-foot">Slope Sentinel · IPITEx 2027 · Bangkok, Thailand</footer>
+
+<nav class="tabs" aria-label="Main">
+  <button class="tab active" data-page="monitor"><svg viewBox="0 0 24 24"><path d="M3 13h4l3-8 4 14 3-6h4"/></svg><span>Monitor</span></button>
+  <button class="tab" data-page="about"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg><span>About</span></button>
+  <button class="tab" data-page="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg><span>Settings</span></button>
+</nav>
+
+<script src="js/mqtt.min.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
